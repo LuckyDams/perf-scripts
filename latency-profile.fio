@@ -1,0 +1,68 @@
+# Latency target profiling jobs
+# (find queue depth that fits within the latency constraints)
+#
+# Usage:
+#   fio latency-profile.fio --directory=/path/to/destination [--section=NAME] [--size=8g]
+#
+#   section:        Job name to run, otherwise all jobs are run sequentially.
+#   size:           Only required when test file does not exist in destination.
+#
+# Note: Latency target values for sequential & random jobs must be adapted to your storage
+# environment in this file. Default values are suitable for healthy SSD based devices.
+
+[global]
+filename=fio_test_file.tmp
+random_generator=lfsr
+#size=8g
+
+# profile over a 5s window
+latency_window=5s
+# 99.9% of IOs must be below the target
+latency_percentile=99.9
+
+# use native async io
+ioengine=libaio
+direct=1
+
+# run jobs sequentially
+stonewall
+new_group=1
+group_reporting=1
+
+# ensure to run enough time to test all iopdepth values (small size test file)
+time_based
+runtime=90s
+ramp_time=5s
+
+## Specific to SEQ jobs
+# IO size
+blocksize=1m
+# maximum IO depth
+iodepth=32
+# Set max acceptable latency for sequential jobs (default: 50 msec)
+latency_target=50ms
+
+[LAT_SEQ_READ]
+description=Latency target profiling for Sequential Read
+readwrite=read
+
+[LAT_SEQ_WRITE]
+description=Latency target profiling for Sequential Write
+rw=write
+
+[global]
+## Specific to RAND jobs
+# IO size
+bs=4k
+# maximum IO depth
+iodepth=128
+# Set max acceptable latency for random jobs (default: 2 msec)
+latency_target=2000
+
+[LAT_RAND_READ]
+description=Latency target profiling for Random Read
+rw=randread
+
+[LAT_RAND_WRITE]
+description=Latency target profiling for Random Write
+rw=randwrite

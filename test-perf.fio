@@ -1,0 +1,64 @@
+# Performance testing jobs
+# (basic sequential/random read/write tests)
+#
+# Usage:
+#   fio test-perf.fio --directory=/path/to/destination [--section=NAME] \
+#       [--runtime=30s] [--numjobs=1] [--size=8g] [--eta-newline=5s]
+#
+#   section:        Job name to run, otherwise all jobs are run sequentially.
+#   runtime:        Run job for specified period of time, if omitted will stop at end of file.
+#   numjobs:        Number  of  clones  (processes/threads  performing  the same workload) of this job.
+#   size:           Only required when test file does not exist in destination.
+#   eta-newline:    Display ETA on new line every time interval (optional).
+#
+# Note: IO size an depth values for sequential & random jobs can be adapted to your needs
+# in this file. Default values are suitable for most throughput/bandwidth based testing.
+
+
+[global]
+filename=fio_test_file.tmp
+random_generator=lfsr
+#size=8g
+
+# use native async io
+ioengine=libaio
+direct=1
+
+# run jobs sequentially
+stonewall
+new_group=1
+group_reporting=1
+
+# ensure time based jobs if runtime value provided at execution
+time_based
+#runtime=30s
+ramp_time=5s
+
+## Specific to SEQ jobs
+# IO size
+blocksize=1m
+# maximum IO depth
+iodepth=8
+
+[SEQ_READ]
+description=Sequential Read performance test
+readwrite=read
+
+[SEQ_WRITE]
+description=Sequential Write performance test
+rw=write
+
+[global]
+## Specific to RAND jobs
+# IO size
+bs=4k
+# maximum IO depth
+iodepth=32
+
+[RAND_READ]
+description=Random Read performance test
+rw=randread
+
+[RAND_WRITE]
+description=Random Write performance test
+rw=randwrite
