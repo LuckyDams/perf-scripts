@@ -117,7 +117,7 @@ echo ">>> Running DD bench: d=${TEST_PATH}  b=${BLOCK_SIZE}  c=${IO_COUNT}  n=${
 echo
 echo ">> Running WRITE jobs..."
 for ((i=1; i <= NUM_JOBS; i++)); do
-  (dd if=/dev/zero of="${TEST_PATH}/dd${i}.tmp" bs="${BLOCK_SIZE}" count="${IO_COUNT}" oflag=dsync iflag=fullblock 2>&1 | sed -nE "s/\\r/\\n/g; /records/!{ s/(.*)/dd-${i}: \1/p }" &)
+  (dd if=/dev/zero of="${TEST_PATH}/dd${i}.tmp" bs="${BLOCK_SIZE}" count="${IO_COUNT}" oflag=dsync,noatime iflag=fullblock 2>&1 | sed -nE "s/\\r/\\n/g; /records/!{ s/(.*)/dd-${i}: \1/p }" &)
   sleep 0.1
 done
 monitor_dd_stats
@@ -128,7 +128,7 @@ sleep ${WAIT_SEC}
 echo
 echo ">> Running READ jobs..."
 for ((i=1; i <= NUM_JOBS; i++)); do
-  (dd if="${TEST_PATH}/dd${i}.tmp" of=/dev/null bs="${BLOCK_SIZE}" count="${IO_COUNT}" oflag=dsync iflag=fullblock 2>&1 | sed -nE "s/\\r/\\n/g; /records/!{ s/(.*)/dd-${i}: \1/p }" &)
+  (dd if="${TEST_PATH}/dd${i}.tmp" of=/dev/null bs="${BLOCK_SIZE}" count="${IO_COUNT}" iflag=dsync,noatime,nocache 2>&1 | sed -nE "s/\\r/\\n/g; /records/!{ s/(.*)/dd-${i}: \1/p }" &)
   sleep 0.1
 done
 monitor_dd_stats
